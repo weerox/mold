@@ -1,0 +1,7 @@
+[package]
+name = "mold"
+version = "0.1.0"
+authors = ["Aron Bergman <aron@aronbergman.se>"]
+edition = "2018"
+
+[dependencies]
