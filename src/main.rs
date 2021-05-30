@@ -1,3 +1,5 @@
+mod dir;
+
 use clap::App;
 use clap::{crate_name, crate_version};
 
