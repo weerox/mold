@@ -1,0 +1,17 @@
+DIRECTORY STRUCTURE
+===================
+
+A Mold project will have a directory structure like the one depicted below.
+
+├─static/
+│ ├─ css/
+│ ├─ js/
+│ └─ img/
+├─content/
+│ ├─contact.html
+│ └─index.html
+├─modules/
+│ ├─quote.html
+│ └─youtube.html
+└─templates/
+  └─base.html
