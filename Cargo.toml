@@ -5,3 +5,4 @@ authors = ["Aron Bergman <aron@aronbergman.se>"]
 edition = "2018"
 
 [dependencies]
+clap = "2.33.3"
