@@ -5,10 +5,14 @@ pub struct Mold {
 }
 
 impl Mold {
-    pub fn new() -> Mold {
-        Mold {
+    pub fn new<D: Into<PathBuf>>(output: D) -> Mold {
+        let mut m = Mold {
             ..Default::default()
-        }
+        };
+
+        m.paths.output = output.into();
+
+        m
     }
 
     pub fn add_templates_dir<D: Into<PathBuf>>(&mut self, dir: D) {
@@ -42,6 +46,7 @@ struct Paths {
     content: Vec<PathBuf>,
     // NOTE 'static' is a reserved keyword
     statics: Vec<PathBuf>,
+    output: PathBuf,
 }
 
 impl Default for Paths {
@@ -51,6 +56,7 @@ impl Default for Paths {
             modules: Vec::new(),
             content: Vec::new(),
             statics: Vec::new(),
+            output: PathBuf::new(),
         }
     }
 }
@@ -60,8 +66,15 @@ mod tests {
     use super::*;
 
     #[test]
+    fn new_sets_output() {
+        let m = Mold::new("out");
+
+        assert_eq!(m.paths.output, PathBuf::from("out"));
+    }
+
+    #[test]
     fn add_single_template_dir() {
-        let mut m = Mold::new();
+        let mut m = Mold::new("out/");
 
         m.add_templates_dir("test/");
 
@@ -71,7 +84,7 @@ mod tests {
 
     #[test]
     fn add_single_modules_dir() {
-        let mut m = Mold::new();
+        let mut m = Mold::new("out/");
 
         m.add_modules_dir("test/");
 
@@ -81,7 +94,7 @@ mod tests {
 
     #[test]
     fn add_single_content_dir() {
-        let mut m = Mold::new();
+        let mut m = Mold::new("out/");
 
         m.add_content_dir("test/");
 
@@ -91,7 +104,7 @@ mod tests {
 
     #[test]
     fn add_single_static_dir() {
-        let mut m = Mold::new();
+        let mut m = Mold::new("out/");
 
         m.add_static_dir("test/");
 
