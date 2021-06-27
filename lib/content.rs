@@ -142,6 +142,8 @@ fn build_tag<'a>(cursor: &mut Cursor<'a>) -> Result<Tag<'a>, ParseError> {
                 unreachable!();
             },
             TagType::SelfClosing => {
+                skip_sign(cursor);
+
                 let name = parse_tag_name(cursor);
 
                 skip_sign(cursor);
@@ -330,6 +332,26 @@ mod tests {
                 children: vec![Node::Text("bar")],
             }
         }));
+
+        assert_eq!(content, eq);
+    }
+
+    #[test]
+    fn one_self_closing_tag() {
+        let content = Content::try_from("<<foo>>");
+
+        assert!(content.is_ok());
+
+        let content = content.unwrap();
+
+        let eq = Content {
+            children: vec![Node::Tag(Tag {
+                name: "foo",
+                content: Content{
+                    children: Vec::new()
+                },
+            })],
+        };
 
         assert_eq!(content, eq);
     }
