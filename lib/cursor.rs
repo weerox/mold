@@ -145,6 +145,24 @@ mod tests {
     }
 
     #[test]
+    fn skip_while_skips_whole_input_when_all_matching() {
+        let mut c = Cursor::new("aaa");
+
+        c.skip_while(|c| c == 'a');
+
+        assert_eq!(c.next(), None);
+    }
+
+    #[test]
+    fn skip_while_skips_all_matching() {
+        let mut c = Cursor::new("aaabbb");
+
+        c.skip_while(|c| c == 'a');
+
+        assert_eq!(c.next(), Some('b'));
+    }
+
+    #[test]
     fn take_while_for_empty_string() {
         let mut c = Cursor::new("");
 
