@@ -1,5 +1,7 @@
 use std::path::PathBuf;
 
+use crate::statics;
+
 pub struct Mold {
     paths: Paths,
 }
@@ -29,6 +31,13 @@ impl Mold {
 
     pub fn add_static_dir<D: Into<PathBuf>>(&mut self, dir: D) {
         self.paths.statics.push(dir.into());
+    }
+
+    pub fn build(&self) {
+        // Copy static files to output directory
+        for dir in &self.paths.statics {
+            statics::copy_static_files(dir, &self.paths.output);
+        }
     }
 }
 
