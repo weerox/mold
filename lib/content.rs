@@ -1,4 +1,5 @@
 use std::convert::TryFrom;
+use std::fmt;
 
 use crate::cursor::Cursor;
 use crate::error::ParseError;
@@ -47,6 +48,26 @@ impl<'input> TryFrom<&'input str> for Content<'input> {
         }
 
         content
+    }
+}
+
+impl fmt::Display for Content<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for child in &self.children {
+            match child {
+                Node::Tag(tag) => {
+                    if tag.content.children.is_empty() {
+                        // Write the tag as self-closing.
+                        write!(f, "<<{}>>", tag.name)?
+                    } else {
+                        write!(f, "<<{}<<{}>>{}>>", tag.name, tag.content, tag.name)?
+                    }
+                },
+                Node::Text(text) => write!(f, "{}", text)?,
+            }
+        }
+
+        Ok(())
     }
 }
 
@@ -375,5 +396,26 @@ mod tests {
         let content = Content::try_from(">>foo>>");
 
         assert_eq!(content, Err(ParseError::NoOpeningTag));
+    }
+
+    #[test]
+    fn displays_correctly() {
+        let s = "<<foo<<bar<<baz>>>>foo>>";
+        let content = Content::try_from(s);
+
+        let content = content.unwrap();
+
+        assert_eq!(format!("{}", content), s);
+    }
+
+    #[test]
+    fn displays_empty_tag_as_self_closing() {
+        let i = "<<foo<<bar<<baz<<>>baz>>>>foo>>";
+        let o = "<<foo<<bar<<baz>>>>foo>>";
+        let content = Content::try_from(i);
+
+        let content = content.unwrap();
+
+        assert_eq!(format!("{}", content), o);
     }
 }
