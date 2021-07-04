@@ -4,21 +4,21 @@ use crate::cursor::Cursor;
 use crate::error::ParseError;
 
 #[derive(Debug, PartialEq)]
-struct Content<'a> {
-    children: Vec<Node<'a>>,
+pub struct Content<'a> {
+    pub children: Vec<Node<'a>>,
 }
 
 #[derive(Debug, PartialEq)]
-enum Node<'a> {
+pub enum Node<'a> {
     Tag(Tag<'a>),
     Text(&'a str),
 }
 
 #[derive(Debug, PartialEq)]
-struct Tag<'a> {
-    name: &'a str,
+pub struct Tag<'a> {
+    pub name: &'a str,
     // attributes: HashMap<K,V>
-    content: Content<'a>,
+    pub content: Content<'a>,
 }
 
 impl<'input> TryFrom<&'input str> for Content<'input> {
