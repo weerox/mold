@@ -9,7 +9,7 @@ clap = "2.33.3"
 tempfile = "3"
 
 [dev-dependencies]
-tempdir = "0.3.7"
+tempfile = "3"
 
 [lib]
 path = "lib/lib.rs"

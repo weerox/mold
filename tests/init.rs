@@ -1,10 +1,10 @@
 use std::process::Command;
 
-use tempdir::TempDir;
+use tempfile::Builder;
 
 #[test]
 fn correct_dir_setup() {
-    let temp_dir = TempDir::new("mold").expect("Could not create temporary directory");
+    let temp_dir = Builder::new().prefix("mold").tempdir().expect("Could not create temporary directory");
 
     let bin = env!("CARGO_BIN_EXE_mold");
 
