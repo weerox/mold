@@ -4,18 +4,18 @@ use std::fmt;
 use crate::cursor::Cursor;
 use crate::error::ParseError;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Content<'a> {
     pub children: Vec<Node<'a>>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Node<'a> {
     Tag(Tag<'a>),
     Text(&'a str),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Tag<'a> {
     pub name: &'a str,
     // attributes: HashMap<K,V>

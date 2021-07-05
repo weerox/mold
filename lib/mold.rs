@@ -1,5 +1,8 @@
 use std::path::PathBuf;
 
+use tempfile::{TempDir, Builder};
+
+use crate::templates;
 use crate::statics;
 
 pub struct Mold {
@@ -34,6 +37,8 @@ impl Mold {
     }
 
     pub fn build(&self) {
+        templates::flatten_templates(&self.paths.templates, &self.paths.build);
+
         // Copy static files to output directory
         for dir in &self.paths.statics {
             statics::copy_static_files(dir, &self.paths.output);
@@ -55,7 +60,10 @@ struct Paths {
     content: Vec<PathBuf>,
     // NOTE 'static' is a reserved keyword
     statics: Vec<PathBuf>,
+    // Directory of built site
     output: PathBuf,
+    // Directory to store temporary build files
+    build: TempDir,
 }
 
 impl Default for Paths {
@@ -66,6 +74,7 @@ impl Default for Paths {
             content: Vec::new(),
             statics: Vec::new(),
             output: PathBuf::new(),
+            build: Builder::new().prefix("mold").tempdir().unwrap(),
         }
     }
 }
