@@ -6,15 +6,15 @@ use std::fs::read_to_string;
 use std::io::Write;
 use std::path::Path;
 
-use crate::content::Content;
-use crate::content::Node;
-use crate::content::Tag;
+use crate::content_tree::ContentTree;
+use crate::content_tree::Node;
+use crate::content_tree::Tag;
 
 // Takes all templates and makes all extended templates stand-alone.
 pub fn flatten_templates<D: AsRef<Path>, T: AsRef<Path>>(templates: &Vec<D>, tmp: &T) {
     // The 'file_content' is only used to make sure the Strings is owned by something.
     let mut file_content: Vec<String> = Vec::new(); 
-    let mut content: Vec<Content> = Vec::new();
+    let mut content: Vec<ContentTree> = Vec::new();
     let mut filenames: Vec<String> = Vec::new();
 
     for dir in templates {
@@ -34,7 +34,7 @@ pub fn flatten_templates<D: AsRef<Path>, T: AsRef<Path>>(templates: &Vec<D>, tmp
     }
 
     for fc in &file_content {
-        let c = Content::try_from(fc.as_ref()).unwrap();
+        let c = ContentTree::try_from(fc.as_ref()).unwrap();
         content.push(c);
     }
 
@@ -43,11 +43,11 @@ pub fn flatten_templates<D: AsRef<Path>, T: AsRef<Path>>(templates: &Vec<D>, tmp
     let hiers = build_hierarchy(edges);
 
     // TODO Make this a HashMap
-    let mut flattened: Vec<(&str, Content)> = Vec::new();
+    let mut flattened: Vec<(&str, ContentTree)> = Vec::new();
 
     fn recursive<'a, 'b>(
-        flattened: &mut Vec<(&'b str, Content<'a>)>,
-        content: &Vec<(&str, &Content<'a>)>,
+        flattened: &mut Vec<(&'b str, ContentTree<'a>)>,
+        content: &Vec<(&str, &ContentTree<'a>)>,
         hier: &'b Hierarchy
     ) {
         for child in &hier.children {
@@ -74,7 +74,7 @@ pub fn flatten_templates<D: AsRef<Path>, T: AsRef<Path>>(templates: &Vec<D>, tmp
         }
     }
 
-    let fnc: Vec<(&str, &Content)> = filenames.iter().map(|s| s.as_ref()).zip(content.iter()).collect();
+    let fnc: Vec<(&str, &ContentTree)> = filenames.iter().map(|s| s.as_ref()).zip(content.iter()).collect();
     for hier in &hiers {
         let &(n, c) = 
             fnc.iter()
@@ -96,7 +96,7 @@ pub fn flatten_templates<D: AsRef<Path>, T: AsRef<Path>>(templates: &Vec<D>, tmp
     }
 }
 
-fn flatten<'a>(parent: &Content<'a>, child: &Content<'a>) -> Content<'a> {
+fn flatten<'a>(parent: &ContentTree<'a>, child: &ContentTree<'a>) -> ContentTree<'a> {
     let mut content = parent.clone();
 
     let mut tlt: HashMap<&str, &mut Tag> = HashMap::new();
@@ -123,7 +123,7 @@ fn flatten<'a>(parent: &Content<'a>, child: &Content<'a>) -> Content<'a> {
 }
 
 fn create_edges<'a, 'b>(
-    content: Vec<(&'b str, &Content<'a>)>
+    content: Vec<(&'b str, &ContentTree<'a>)>
 ) -> Vec<(Option<&'a str>, &'b str)> {
     let mut v = Vec::new();
 
@@ -281,7 +281,7 @@ mod tests {
         let t_root = "This is the root template.\n";
         let t_child = "<<root<<This template extends root>>root>>\n";
 
-        let pairs = vec![("root", Content::try_from(t_root).unwrap()), ("child", Content::try_from(t_child).unwrap())];
+        let pairs = vec![("root", ContentTree::try_from(t_root).unwrap()), ("child", ContentTree::try_from(t_child).unwrap())];
 
         let edges = create_edges(pairs.iter().map(|(a, b)| (*a, b)).collect());
 

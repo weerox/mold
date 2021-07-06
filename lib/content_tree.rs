@@ -5,7 +5,7 @@ use crate::cursor::Cursor;
 use crate::error::ParseError;
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Content<'a> {
+pub struct ContentTree<'a> {
     pub children: Vec<Node<'a>>,
 }
 
@@ -19,10 +19,10 @@ pub enum Node<'a> {
 pub struct Tag<'a> {
     pub name: &'a str,
     // attributes: HashMap<K,V>
-    pub content: Content<'a>,
+    pub content: ContentTree<'a>,
 }
 
-impl<'input> TryFrom<&'input str> for Content<'input> {
+impl<'input> TryFrom<&'input str> for ContentTree<'input> {
     type Error = ParseError;
 
     fn try_from(input: &'input str) -> Result<Self, Self::Error> {
@@ -51,7 +51,7 @@ impl<'input> TryFrom<&'input str> for Content<'input> {
     }
 }
 
-impl fmt::Display for Content<'_> {
+impl fmt::Display for ContentTree<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for child in &self.children {
             match child {
@@ -71,8 +71,8 @@ impl fmt::Display for Content<'_> {
     }
 }
 
-fn build_content<'a>(cursor: &mut Cursor<'a>) -> Result<Content<'a>, ParseError> {
-    let mut content = Content {
+fn build_content<'a>(cursor: &mut Cursor<'a>) -> Result<ContentTree<'a>, ParseError> {
+    let mut content = ContentTree {
         children: Vec::new(),
     };
 
@@ -171,7 +171,7 @@ fn build_tag<'a>(cursor: &mut Cursor<'a>) -> Result<Tag<'a>, ParseError> {
 
                 Ok(Tag {
                     name: name,
-                    content: Content {
+                    content: ContentTree {
                         children: Vec::new(),
                     },
                 })
@@ -325,7 +325,7 @@ mod tests {
 
     #[test]
     fn only_text_content() {
-        let content = Content::try_from("abc");
+        let content = ContentTree::try_from("abc");
 
         assert!(content.is_ok());
 
@@ -337,19 +337,19 @@ mod tests {
 
     #[test]
     fn one_tag_with_only_text_content() {
-        let content = Content::try_from("<<foo<<bar>>foo>>");
+        let content = ContentTree::try_from("<<foo<<bar>>foo>>");
 
         assert!(content.is_ok());
 
         let content = content.unwrap();
 
-        let mut eq = Content {
+        let mut eq = ContentTree {
             children: Vec::new(),
         };
 
         eq.children.push(Node::Tag(Tag {
             name: "foo",
-            content: Content {
+            content: ContentTree {
                 children: vec![Node::Text("bar")],
             }
         }));
@@ -359,16 +359,16 @@ mod tests {
 
     #[test]
     fn one_self_closing_tag() {
-        let content = Content::try_from("<<foo>>");
+        let content = ContentTree::try_from("<<foo>>");
 
         assert!(content.is_ok());
 
         let content = content.unwrap();
 
-        let eq = Content {
+        let eq = ContentTree {
             children: vec![Node::Tag(Tag {
                 name: "foo",
-                content: Content{
+                content: ContentTree {
                     children: Vec::new()
                 },
             })],
@@ -379,21 +379,21 @@ mod tests {
 
     #[test]
     fn unclosed_tag() {
-        let content = Content::try_from("<<foo<<bar");
+        let content = ContentTree::try_from("<<foo<<bar");
 
         assert_eq!(content, Err(ParseError::NoClosingTag));
     }
 
     #[test]
     fn closing_tag_that_does_not_match() {
-        let content = Content::try_from("<<foo<<bar>>baz>>");
+        let content = ContentTree::try_from("<<foo<<bar>>baz>>");
 
         assert_eq!(content, Err(ParseError::InvalidClosingTag));
     }
 
     #[test]
     fn only_closing_tag() {
-        let content = Content::try_from(">>foo>>");
+        let content = ContentTree::try_from(">>foo>>");
 
         assert_eq!(content, Err(ParseError::NoOpeningTag));
     }
@@ -401,7 +401,7 @@ mod tests {
     #[test]
     fn displays_correctly() {
         let s = "<<foo<<bar<<baz>>>>foo>>";
-        let content = Content::try_from(s);
+        let content = ContentTree::try_from(s);
 
         let content = content.unwrap();
 
@@ -412,7 +412,7 @@ mod tests {
     fn displays_empty_tag_as_self_closing() {
         let i = "<<foo<<bar<<baz<<>>baz>>>>foo>>";
         let o = "<<foo<<bar<<baz>>>>foo>>";
-        let content = Content::try_from(i);
+        let content = ContentTree::try_from(i);
 
         let content = content.unwrap();
 
